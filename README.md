@@ -20,6 +20,10 @@ it, simply add the following line to your Podfile:
 pod 'CJCarouselView'
 ```
 
+## ScreenShot
+
+![ScreenShot](https://i.postimg.cc/XqTx1vkr/2020-12-04-1-17-26.gif)
+
 ## Author
 
 cj1024, jianchen1024@gmail.com
