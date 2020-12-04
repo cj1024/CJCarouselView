@@ -87,7 +87,7 @@ pod 'CJCarouselView'
 
 ## ScreenShot
 
-[![2020-12-04-1-17-26.gif](https://i.postimg.cc/XqTx1vkr/2020-12-04-1-17-26.gif)](https://postimg.cc/8fmhjN3G)
+![ScreenShot1](https://ftp.bmp.ovh/imgs/2020/12/68011dc7fba03ec0.gif)
 
 ## Author
 
