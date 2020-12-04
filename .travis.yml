@@ -4,7 +4,7 @@
 
 osx_image: xcode12.2
 rvm:
-  - 2.6
+- 2.6
 language: objective-c
 cache: cocoapods
 podfile: Example/Podfile
@@ -12,5 +12,5 @@ before_install:
 - gem install cocoapods # Since Travis is not always on latest version
 - pod install --project-directory=Example
 script:
-- set -o pipefail && xcodebuild test -enableCodeCoverage YES -workspace Example/CJCarouselView.xcworkspace -scheme CJCarouselView-Example -sdk iphonesimulator14.2 ONLY_ACTIVE_ARCH=NO | xcpretty
+- xcodebuild -workspace Example/CJCarouselView.xcworkspace -scheme CJCarouselView-Example -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO
 - pod lib lint
