@@ -93,7 +93,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewLayoutDirection){
 
 @interface CJCarouselView (LayoutInset)
 
-@property(nonatomic, assign, readwrite) UIEdgeInsets holderLayoutInset; // 慎用，默认UIEdgeInsetsZero，建议用简便方法设置
+@property(nonatomic, assign, readwrite) UIEdgeInsets holderLayoutInset; // 慎用，默认UIEdgeInsetsZero，重设会触发reloadData，建议用简便方法设置
 @property(nonatomic, assign, readwrite) UIEdgeInsets contentLayoutInset; // 慎用，默认UIEdgeInsetsZero，重设会触发reloadData，建议用简便方法设置
 
 /**
@@ -150,7 +150,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewLayoutDirection){
  *  滚动进度通知
  *
  *  @param carouselView          carouselView
- *  @param pageIndexRatio        滚动进度，比如0.5说明滚动到第一页与第二页之间
+ *  @param pageIndexRatio        滚动进度，比如0.5说明滚动到第一页与第二页之间，开looping时值可能范围为[-1 - numberOfPage]
  */
 - (void)carouselView:(CJCarouselView *)carouselView didScrollToPageIndexRatio:(CGFloat)pageIndexRatio;
 

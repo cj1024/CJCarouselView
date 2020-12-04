@@ -28,7 +28,7 @@
 
 @property(nonatomic, assign, readwrite) CGFloat fadeoutAlpha; // [0.0 - 1.0]，渐隐的最终alpha值，默认1.0，表示不渐隐
 
-@property(nonatomic, assign, readwrite) UIEdgeInsets holderLayoutInset; // 慎用，默认UIEdgeInsetsZero
+@property(nonatomic, assign, readwrite) UIEdgeInsets holderLayoutInset; // 慎用，默认UIEdgeInsetsZero，重设会触发reloadData
 
 @property(nonatomic, assign, readwrite) UIEdgeInsets contentLayoutInset; // 慎用，默认UIEdgeInsetsZero，重设会触发reloadData
 
