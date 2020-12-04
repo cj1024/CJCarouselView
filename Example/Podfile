@@ -6,6 +6,7 @@ target 'CJCarouselView_Example' do
   pod 'CJCarouselView', :path => '../'
   pod 'SDWebImage'
   pod 'Masonry'
+  pod 'Toast'
   pod 'FLEX'
   target 'CJCarouselView_Tests' do
     inherit! :search_paths

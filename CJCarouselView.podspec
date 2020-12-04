@@ -1,10 +1,14 @@
 Pod::Spec.new do |s|
   s.name             = 'CJCarouselView'
-  s.version          = '0.1.0'
-  s.summary          = 'A Simple Carousel View'
+  s.version          = '0.1.1'
+  s.summary          = 'A Carousel View In Objective-C'
   s.description      = <<-DESC
-Support Infinity Looping.
-Support Horizontal An Vertical.
+UITableView Style API.
+Not Other Lib Dependency.
+Support Customize Each Single Page.
+Support Infinity Looping Scroll.
+Support Horizontal An Vertical Direction.
+Support Fade Transition.
                        DESC
 
   s.homepage         = 'https://github.com/cj1024/CJCarouselView'
@@ -15,9 +19,13 @@ Support Horizontal An Vertical.
 
   s.ios.deployment_target = '9.0'
 
-  s.source_files = 'CJCarouselView/Classes/**/*'
-  s.public_header_files = 'Pod/Classes/*.h'
-  s.public_header_files = 'Pod/Classes/Private/*.h'
-  s.frameworks = 'UIKit'
+  s.subspec 'Core' do |core|
+    core.frameworks = 'UIKit'
+    core.source_files = 'CJCarouselView/Classes/Core/**/*'
+    core.public_header_files = 'CJCarouselView/Classes/Core/*.h'
+    core.private_header_files = 'CJCarouselView/Classes/Core/Private/*.h'
+  end
+
+  s.default_subspecs = 'Core'
 
 end
