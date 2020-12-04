@@ -19,6 +19,8 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
     eCJCarouselViewPageOptionPre
 };
 
+static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
+
 @interface CJCarouselView () <UICollectionViewDataSource, UICollectionViewDelegate, CJCarouselCollectionViewManipulationDelegate>
 
 @property(nonatomic, assign, readwrite) NSUInteger currentPageIndex;
@@ -29,6 +31,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
 @property(nonatomic, assign, readwrite) NSUInteger numberOfPages; // 页面数量记录
 @property(nonatomic, strong, readwrite) NSTimer *timer; // 自动滚动定时器
 @property(nonatomic, assign, readwrite) BOOL autoScroll; // 是否开启自动滚动
+@property(nonatomic, assign, readonly) NSUInteger unsafeModeMinItemCount;
 
 @end
 
@@ -63,6 +66,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
 }
 
 - (void)commonInit {
+    _unsafeModeMinItemCount = kCJCarouselViewMinItemsCountForUnsafeLayout;
     _autoScrollInterval = 1.0;
     _reuseableViewsQueue = [NSMutableDictionary dictionary];
     _collectionViewLayout = [[CJCarouselCollectionViewLayout alloc] init];
@@ -90,6 +94,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
     self.collectionView.frame = UIEdgeInsetsInsetRect(self.bounds, UIEdgeInsetsMake(-self.holderLayoutInset.bottom, -self.holderLayoutInset.right, -self.holderLayoutInset.top, -self.holderLayoutInset.left));
     [self.collectionViewLayout invalidateLayout];
     [self scrollToPageAtIndex:self.currentPageIndex animated:NO];
+    [self updateUnsafeModeMinItemCount];
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
@@ -119,18 +124,18 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
 #pragma mark UICollectionView DataSource & Delegate
 
 - (NSUInteger)wrappedIndex:(NSUInteger)originalIndex {
-    if ([self.collectionViewLayout unsafeLayout] && (self.numberOfPages > 0 && self.numberOfPages < 4) && originalIndex >= self.numberOfPages) {
+    if ([self.collectionViewLayout unsafeLayout] && (self.numberOfPages > 0 && self.numberOfPages < self.unsafeModeMinItemCount) && originalIndex >= self.numberOfPages) {
         return originalIndex % self.numberOfPages;
     }
     return originalIndex;
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    if ([self.collectionViewLayout unsafeLayout] && (self.numberOfPages > 0 && self.numberOfPages < 4)) {
+    if ([self.collectionViewLayout unsafeLayout] && (self.numberOfPages > 0 && self.numberOfPages < self.unsafeModeMinItemCount)) {
         NSUInteger numberOfPage = self.numberOfPages;
         do {
             numberOfPage *= 2;
-        } while (numberOfPage < 4);
+        } while (numberOfPage < self.unsafeModeMinItemCount);
         return numberOfPage;
     }
     return self.numberOfPages;
@@ -184,6 +189,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
             case eCJCarouselViewLayoutDirectionVertial: {
                 targetOffset = self.collectionView.contentOffset.y;
                 ITEM_SIZE = self.collectionView.frame.size.height;
+                [self notifyScrollRatio:ITEM_SIZE offset:targetOffset];
                 if (!self.loopingDisabled) {
                     // 无限循环
                     if (targetOffset <= 0) {
@@ -197,6 +203,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
             default: {
                 targetOffset = self.collectionView.contentOffset.x;
                 ITEM_SIZE = self.collectionView.frame.size.width;
+                [self notifyScrollRatio:ITEM_SIZE offset:targetOffset];
                 if (!self.loopingDisabled) {
                     // 无限循环
                     if (targetOffset <= 0) {
@@ -207,21 +214,6 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
                 }
             }
                 break;
-        }
-        if (ITEM_SIZE > 0) {
-            CGFloat indexRatio = targetOffset / ITEM_SIZE;
-            if (!self.loopingDisabled) {
-                indexRatio -= 1.0;
-                if (indexRatio < 0) {
-                    indexRatio += self.numberOfPages;
-                }
-            }
-            while (indexRatio >= self.numberOfPages) {
-                indexRatio -= self.numberOfPages;
-            }
-            if ([self.delegate respondsToSelector:@selector(carouselView:didScrollToPageIndexRatio:)]) {
-                [self.delegate carouselView:self didScrollToPageIndexRatio:indexRatio];
-            }
         }
     }
 }
@@ -360,6 +352,52 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
             break;
         default:
             break;
+    }
+}
+
+- (void)notifyScrollRatio:(CGFloat)itemSize offset:(CGFloat)offset {
+    if (itemSize > 0) {
+        CGFloat indexRatio = offset / itemSize;
+        if (!self.loopingDisabled) {
+            indexRatio -= 1.0;
+        }
+        while (indexRatio >= self.numberOfPages) {
+            indexRatio -= self.numberOfPages;
+        }
+        if ([self.delegate respondsToSelector:@selector(carouselView:didScrollToPageIndexRatio:)]) {
+            [self.delegate carouselView:self didScrollToPageIndexRatio:indexRatio];
+        }
+    }
+}
+
+- (void)updateUnsafeModeMinItemCount {
+    NSUInteger oldCount = _unsafeModeMinItemCount;
+    NSUInteger count = kCJCarouselViewMinItemsCountForUnsafeLayout;
+    CGFloat size = 0;
+    CGFloat itemSize = 0;
+    switch (self.layoutDirection) {
+        case eCJCarouselViewLayoutDirectionVertial: {
+            size = CGRectGetHeight(self.bounds);
+            itemSize = size;
+            if ([self.collectionViewLayout unsafeLayout]) {
+                itemSize = itemSize - self.contentLayoutInset.top - self.contentLayoutInset.bottom;
+            }
+        }
+            break;
+        default: {
+            size = CGRectGetWidth(self.bounds);
+            itemSize = size;
+            if ([self.collectionViewLayout unsafeLayout]) {
+                itemSize = itemSize - self.contentLayoutInset.left - self.contentLayoutInset.right;
+            }
+        }
+            break;
+    }
+    itemSize = MAX(1, itemSize);
+    count = ceil(size / itemSize) + 3;
+    _unsafeModeMinItemCount = count;
+    if (oldCount != count && [self.collectionViewLayout unsafeLayout]) {
+        [self.collectionView reloadData];
     }
 }
 
@@ -589,6 +627,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
 - (void)setHolderLayoutInset:(UIEdgeInsets)holderLayoutInset {
     self.collectionViewLayout.holderLayoutInset = holderLayoutInset;
     [self setNeedsLayout];
+    [self updateUnsafeModeMinItemCount];
 }
 
 @dynamic contentLayoutInset;
@@ -599,6 +638,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
 
 - (void)setContentLayoutInset:(UIEdgeInsets)contentLayoutInset {
     self.collectionViewLayout.contentLayoutInset = contentLayoutInset;
+    [self updateUnsafeModeMinItemCount];
 }
 
 - (void)smartUpdateLayoutInsetForPrePageExposed:(CGFloat)prePageExposed

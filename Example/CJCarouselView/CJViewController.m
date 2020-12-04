@@ -10,6 +10,7 @@
 #import <CJCarouselView/CJCarouselView.h>
 #import <Masonry/Masonry.h>
 #import <SDWebImage/SDWebImage.h>
+#import <Toast/Toast.h>
 
 @interface CJViewController () <CJCarouselViewDataSource, CJCarouselViewDelegate>
 
@@ -57,7 +58,7 @@
         aView.delegate = self;
         aView.fadeoutAlpha = 0.2;
         aView.enableScrollOnSinglePage = YES;
-        [aView smartUpdateLayoutInsetForPrePageExposed:10 nextPageExposed:30 pageGap:10];
+        [aView smartUpdateLayoutInsetForPrePageExposed:30 nextPageExposed:30 pageGap:20];
         _carouselView = aView;
     }
     return _carouselView;
@@ -80,28 +81,35 @@
         @"https://uploadbeta.com/api/pictures/random/?i=2",
         @"https://uploadbeta.com/api/pictures/random/?i=3",
         @"https://uploadbeta.com/api/pictures/random/?i=4",
-        @"https://uploadbeta.com/api/pictures/random/?i=5"
+        @"https://uploadbeta.com/api/pictures/random/?i=5",
     ];
     [self.carouselView reloadData];
-}
-
-- (CJCarouselViewPage *)carouselView:(CJCarouselView *)pageView pageViewAtIndex:(NSUInteger)index reuseableView:(CJCarouselViewPage *)reuseableView {
-    if (!reuseableView) {
-        reuseableView = [[CJCarouselViewPage alloc] init];
-    }
-    reuseableView.imageView.layer.cornerRadius = 8.f;
-    [reuseableView.imageView setContentMode:UIViewContentModeScaleAspectFill];
-    [reuseableView.imageView sd_setImageWithURL:[NSURL URLWithString:self.imageUrls[index]]];
-    reuseableView.enableRippleHighlightStyle = YES;
-    return reuseableView;
 }
 
 - (NSUInteger)carouselViewNumberOfPages:(CJCarouselView *)pageView {
     return [self.imageUrls isKindOfClass:[NSArray class]] ? self.imageUrls.count : 0;
 }
 
+- (CJCarouselViewPage *)carouselView:(CJCarouselView *)pageView pageViewAtIndex:(NSUInteger)index reuseableView:(CJCarouselViewPage *)reuseableView {
+    if (!reuseableView) {
+        reuseableView = [[CJCarouselViewPage alloc] init];
+        reuseableView.contentLabel.textColor = [UIColor whiteColor];
+        reuseableView.contentLabel.textAlignment = NSTextAlignmentCenter;
+        reuseableView.imageView.layer.cornerRadius = 8.f;
+        [reuseableView.imageView setContentMode:UIViewContentModeScaleAspectFill];
+        reuseableView.enableRippleHighlightStyle = YES;
+    }
+    [reuseableView.imageView sd_setImageWithURL:[NSURL URLWithString:self.imageUrls[index]]];
+    reuseableView.contentLabel.text = [NSString stringWithFormat:@"%ld", index];
+    return reuseableView;
+}
+
 - (void)carouselView:(CJCarouselView *)carouselView didScrollToPageIndexRatio:(CGFloat)pageIndexRatio {
     self.ratioIndicator.text = [NSString stringWithFormat:@"%.8f/%ld", pageIndexRatio + 1, carouselView.numberOfPages];
+}
+
+- (void)carouselView:(CJCarouselView *)carouselView didSelectPageAtIndex:(NSUInteger)index {
+    [self.view makeToast:[NSString stringWithFormat:@"Selected Page %ld", index]];
 }
 
 @end

@@ -210,11 +210,13 @@
     _holderLayoutInset = holderLayoutInset;
     // 更新布局
     [self invalidateLayout];
+    [self.collectionView reloadData];
 }
 
 - (void)setContentLayoutInset:(UIEdgeInsets)contentLayoutInset {
     _contentLayoutInset = contentLayoutInset;
     // 更新布局
+    [self invalidateLayout];
     [self.collectionView reloadData];
 }
 
