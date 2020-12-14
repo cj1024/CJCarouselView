@@ -227,6 +227,10 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
         if ([self.scrollViewDelegateBridge respondsToSelector:@selector(scrollViewInCarouselViewWillBeginDragging:)]) {
             [self.scrollViewDelegateBridge scrollViewInCarouselViewWillBeginDragging:self];
         }
+        NSInteger realIndex = [self preferredPageIndexForOffset:scrollView.contentOffset];
+        if (self.currentPageIndex != realIndex) {
+            [self updateCurrentPageIndex:realIndex];
+        }
         if (self.timer) {
             [self.timer invalidate];
         }
@@ -236,25 +240,38 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     if (scrollView == self.collectionView) {
         [self setupTimer];
-        NSInteger realIndex = 0;
-        switch (self.layoutDirection) {
-            case eCJCarouselViewLayoutDirectionVertial:
-                realIndex = round(scrollView.contentOffset.y / scrollView.frame.size.height);
-                break;
-            default:
-                realIndex = round(scrollView.contentOffset.x / scrollView.frame.size.width);
-                break;
-        }
-        if (!self.loopingDisabled) {
-            if (realIndex == 0) {
-                realIndex = self.numberOfPages - 1;
-            } else if (realIndex == self.numberOfPages + 1) {
-                realIndex = 0;
-            } else {
-                realIndex = realIndex - 1;
-            }
-        }
+        NSInteger realIndex = [self preferredPageIndexForOffset:scrollView.contentOffset];
         [self updateCurrentPageIndex:realIndex];
+    }
+}
+
+- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset {
+    if (scrollView == self.collectionView) {
+        if ([self specialPagingModeEnabled]) {
+            NSInteger targetIndex = [self preferredPageIndexForOffset:*targetContentOffset];
+            if (targetIndex > self.currentPageIndex) {
+                targetIndex = self.currentPageIndex + 1;
+            } else if (targetIndex < self.currentPageIndex) {
+                targetIndex = self.currentPageIndex - 1;
+            }
+            if (targetIndex == self.currentPageIndex) {
+                CGFloat speed = 0;
+                switch (self.layoutDirection) {
+                    case eCJCarouselViewLayoutDirectionVertial:
+                        speed = velocity.y;
+                        break;
+                    default:
+                        speed = velocity.x;
+                        break;
+                }
+                if (speed > 0.5) {
+                    targetIndex = self.currentPageIndex + 1;
+                } else if (speed < -0.5) {
+                    targetIndex = self.currentPageIndex - 1;
+                }
+            }
+            *targetContentOffset = [self contentOffsetForPage:targetIndex];
+        }
     }
 }
 
@@ -401,6 +418,101 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     }
 }
 
+- (BOOL)specialPagingModeEnabled {
+    return self.specialPagingMode && self.loopingDisabled;
+}
+
+- (void)updateRealPagingMode {
+    self.collectionView.pagingEnabled = ![self specialPagingModeEnabled];
+    if (!self.collectionView.pagingEnabled) {
+        self.collectionView.decelerationRate = UIScrollViewDecelerationRateFast;
+    }
+}
+
+- (NSInteger)preferredPageIndexForOffset:(CGPoint)offset {
+    NSInteger realIndex = 0;
+    switch (self.layoutDirection) {
+        case eCJCarouselViewLayoutDirectionVertial:
+            realIndex = round(offset.y / self.collectionView.frame.size.height);
+            break;
+        default:
+            realIndex = round(offset.x / self.collectionView.frame.size.width);
+            break;
+    }
+    if (!self.loopingDisabled) {
+        if (realIndex == 0) {
+            realIndex = self.numberOfPages - 1;
+        } else if (realIndex == self.numberOfPages + 1) {
+            realIndex = 0;
+        } else {
+            realIndex = realIndex - 1;
+        }
+    }
+    return realIndex;
+}
+
+- (CGPoint)normalContentOffsetForPage:(NSInteger)pageIndex {
+    if (self.numberOfPages == 0) {
+        return CGPointZero;
+    } else {
+        // 计算要移动到的位置的index（非实际index）
+        if (self.loopingDisabled) {
+            // NSInteger -1 > NSUIntger 0，所以一定要先判 < 0
+            if (pageIndex < 0) {
+                pageIndex = 0;
+            } else if (pageIndex >= self.numberOfPages) {
+                pageIndex = self.numberOfPages - 1;
+            }
+        } else {
+            if (pageIndex < -1) {
+                pageIndex = -1;
+            } else if (pageIndex > self.numberOfPages) {
+                pageIndex = self.numberOfPages;
+            }
+            pageIndex++;
+        }
+        CGPoint offset;
+        switch (self.layoutDirection) {
+            case eCJCarouselViewLayoutDirectionVertial:
+                offset = CGPointMake(0, pageIndex * self.collectionView.frame.size.height);
+                break;
+            default:
+                offset = CGPointMake(pageIndex * self.collectionView.frame.size.width, 0);
+                break;
+        }
+        return offset;
+    }
+}
+
+- (CGPoint)contentOffsetForPage:(NSInteger)page {
+    if ([self specialPagingModeEnabled]) {
+        if (self.numberOfPages >= 2) {
+            CGPoint offset = [self normalContentOffsetForPage:page];
+            if (page <= 0) {
+                switch (self.layoutDirection) {
+                    case eCJCarouselViewLayoutDirectionVertial:
+                        offset.y += self.specialPagingModeFirstPageOffsetAdjust;
+                        break;
+                    default:
+                        offset.x += self.specialPagingModeFirstPageOffsetAdjust;
+                        break;
+                }
+            } else if (page >= self.numberOfPages - 1) {
+                switch (self.layoutDirection) {
+                    case eCJCarouselViewLayoutDirectionVertial:
+                        offset.y += self.specialPagingModeLastPageOffsetAdjust;
+                        break;
+                    default:
+                        offset.x += self.specialPagingModeLastPageOffsetAdjust;
+                        break;
+                }
+            }
+            return offset;
+        }
+    }
+    return [self normalContentOffsetForPage:page];
+}
+
 #pragma mark -
 #pragma mark Public Method
 
@@ -457,6 +569,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 
 - (void)setLoopingDisabled:(BOOL)loopingDisabled {
     self.collectionViewLayout.loopingDisabled = loopingDisabled;
+    [self updateRealPagingMode];
 }
 
 @dynamic bouncesDisabled;
@@ -503,34 +616,23 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     _collectionView.draggingEnabled = draggingEnabled;
 }
 
+@dynamic specialPagingMode;
+
+- (BOOL)specialPagingMode {
+    return ((CJCarouselCollectionView *)self.collectionView).specialPagingMode;
+}
+
+- (void)setSpecialPagingMode:(BOOL)specialPagingMode {
+    ((CJCarouselCollectionView *)self.collectionView).specialPagingMode = specialPagingMode;
+    [self updateRealPagingMode];
+}
+
 - (void)scrollToPageAtIndex:(NSInteger)index animated:(BOOL)animated {
     if (self.numberOfPages == 0) {
         // 无数据时直接滚动
         [self scrollToOffset:CGPointZero animated:animated index:0 option:eCJCarouselViewPageOptionNone];
     } else {
-        // 计算要移动到的位置的index（非实际index）
-        if (index >= self.numberOfPages) {
-            index = self.numberOfPages - 1;
-        } else if (index < 0) {
-            index = 0;
-        }
-        if (!self.loopingDisabled) {
-            index++;
-        }
-        CGPoint offset;
-        switch (self.layoutDirection) {
-            case eCJCarouselViewLayoutDirectionVertial:
-                offset = CGPointMake(0, index * self.collectionView.frame.size.height);
-                break;
-            default:
-                offset = CGPointMake(index * self.collectionView.frame.size.width, 0);
-                break;
-        }
-        // 恢复实际index
-        if (!self.loopingDisabled) {
-            index--;
-        }
-        [self scrollToOffset:offset animated:animated index:index option:eCJCarouselViewPageOptionNone];
+        [self scrollToOffset:[self contentOffsetForPage:index] animated:animated index:index option:eCJCarouselViewPageOptionNone];
     }
 }
 
@@ -542,29 +644,28 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
             if (index >= self.numberOfPages) {
                 index = 0;
             }
+            [self scrollToOffset:[self contentOffsetForPage:index] animated:YES index:index option:eCJCarouselViewPageOptionNext];
         } else {
             if (index > self.numberOfPages) {
                 index = self.numberOfPages;
             }
             index++;
-        }
-        CGPoint offset;
-        switch (self.layoutDirection) {
-            case eCJCarouselViewLayoutDirectionVertial:
-                offset = CGPointMake(0, index * self.collectionView.frame.size.height);
-                break;
-            default:
-                offset = CGPointMake(index * self.collectionView.frame.size.width, 0);
-                break;
-        }
-        // 恢复实际index
-        if (!self.loopingDisabled) {
+            CGPoint offset;
+            switch (self.layoutDirection) {
+                case eCJCarouselViewLayoutDirectionVertial:
+                    offset = CGPointMake(0, index * self.collectionView.frame.size.height);
+                    break;
+                default:
+                    offset = CGPointMake(index * self.collectionView.frame.size.width, 0);
+                    break;
+            }
+            // 恢复实际index
             index--;
             if (index == self.numberOfPages) {
                 index = 0;
             }
+            [self scrollToOffset:offset animated:YES index:index option:eCJCarouselViewPageOptionNext];
         }
-        [self scrollToOffset:offset animated:YES index:index option:eCJCarouselViewPageOptionNext];
     }
 }
 
@@ -576,29 +677,28 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
             if (index <= -1) {
                 index = self.numberOfPages -1;
             }
+            [self scrollToOffset:[self contentOffsetForPage:index] animated:YES index:index option:eCJCarouselViewPageOptionNext];
         } else {
             if (index < -1) {
                 index = -1;
             }
             index++;
-        }
-        CGPoint offset;
-        switch (self.layoutDirection) {
-            case eCJCarouselViewLayoutDirectionVertial:
-                offset = CGPointMake(0, index * self.collectionView.frame.size.height);
-                break;
-            default:
-                offset = CGPointMake(index * self.collectionView.frame.size.width, 0);
-                break;
-        }
-        // 恢复实际index
-        if (!self.loopingDisabled) {
+            CGPoint offset;
+            switch (self.layoutDirection) {
+                case eCJCarouselViewLayoutDirectionVertial:
+                    offset = CGPointMake(0, index * self.collectionView.frame.size.height);
+                    break;
+                default:
+                    offset = CGPointMake(index * self.collectionView.frame.size.width, 0);
+                    break;
+            }
+            // 恢复实际index
             index--;
             if (index == -1) {
                 index = self.numberOfPages - 1;
             }
+            [self scrollToOffset:offset animated:YES index:index option:eCJCarouselViewPageOptionPre];
         }
-        [self scrollToOffset:offset animated:YES index:index option:eCJCarouselViewPageOptionPre];
     }
 }
 

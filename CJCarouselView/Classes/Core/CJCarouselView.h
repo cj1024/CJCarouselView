@@ -55,6 +55,18 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewLayoutDirection){
 
 @property(nonatomic, assign, readwrite) BOOL draggingEnabled; // 默认YES，关闭手势造成的滚动，会在CollectionView的setScrollEnabled时综合起来判断
 
+/**
+ * 正常情况下每一页在被滚动到时在屏幕上的相对位置时一样的，但有时候需要在第一页和最后一页采取贴边的布局方式，这时可以开启此组选项
+ * 仅loopingDisabled且numberOfPages > 1时有效
+ * 触发后将取消scrollview默认的paging，因此体验会略有不同
+ * 触发后，与scroll ratio相关的数值在第一页和最后一页可能与预期不符，fadeoutAlpha也会不正常
+ * 
+ * specialPagingModeFirstPageOffsetAdjust请设置 >= 0，否则将处于弹性状态
+ * specialPagingModeLastPageOffsetAdjust请设置 <= 0，否则将处于弹性状态
+ */
+@property(nonatomic, assign, readwrite) BOOL specialPagingMode;
+@property(nonatomic, assign, readwrite) CGFloat specialPagingModeFirstPageOffsetAdjust;
+@property(nonatomic, assign, readwrite) CGFloat specialPagingModeLastPageOffsetAdjust;
 
 /**
  *  刷新数据源
