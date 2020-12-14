@@ -75,6 +75,13 @@
     return self;
 }
 
+- (BOOL)touchesShouldCancelInContentView:(UIView *)view {
+    if (!self.delaysContentTouches && ([view isKindOfClass:[UIControl class]] || [view isKindOfClass:[UIScrollView class]])) {
+        return YES;
+    }
+    return [super touchesShouldCancelInContentView:view];
+}
+
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     [super touchesBegan:touches withEvent:event];
     if ([self.manipulationDelegate respondsToSelector:@selector(carouselViewCollectionViewTouchBegan:)]) {

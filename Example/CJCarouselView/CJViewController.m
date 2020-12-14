@@ -15,8 +15,12 @@
 @interface CJViewController () <CJCarouselViewDataSource, CJCarouselViewDelegate>
 
 @property(nonatomic, copy, readwrite) NSArray <NSString *> *imageUrls;
-@property(nonatomic, strong, readwrite) CJCarouselView *carouselView;
-@property(nonatomic, strong, readwrite) UILabel *ratioIndicator;
+
+@property(nonatomic, strong, readwrite) CJCarouselView *carouselView1;
+@property(nonatomic, strong, readwrite) UILabel *ratioIndicator1;
+
+@property(nonatomic, strong, readwrite) CJCarouselView *carouselView2;
+@property(nonatomic, strong, readwrite) UILabel *ratioIndicator2;
 
 @end
 
@@ -34,44 +38,84 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    [self.view addSubview:self.carouselView];
-    [self.carouselView mas_makeConstraints:^(MASConstraintMaker *make) {
+    [self.view addSubview:self.carouselView1];
+    [self.carouselView1 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(self.view.mas_width);
         make.height.mas_equalTo(self.view.mas_width).multipliedBy(28. / 75.);
         make.centerX.mas_equalTo(self.view.mas_centerX);
-        make.centerY.mas_equalTo(self.view.mas_centerY);
+        make.centerY.mas_equalTo(self.view.mas_centerY).multipliedBy(0.5);
     }];
-    [self.view addSubview:self.ratioIndicator];
-    [self.ratioIndicator mas_makeConstraints:^(MASConstraintMaker *make) {
+    [self.view addSubview:self.ratioIndicator1];
+    [self.ratioIndicator1 mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(self.view.mas_width);
-        make.top.mas_equalTo(self.carouselView.mas_bottom).offset(10.f);
+        make.top.mas_equalTo(self.carouselView1.mas_bottom).offset(10.f);
+        make.centerX.mas_equalTo(self.view.mas_centerX);
+        make.height.mas_equalTo(30);
+    }];
+    [self.view addSubview:self.carouselView2];
+    [self.carouselView2 mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.width.mas_equalTo(self.view.mas_width);
+        make.height.mas_equalTo(self.view.mas_width).multipliedBy(28. / 75.);
+        make.centerX.mas_equalTo(self.view.mas_centerX);
+        make.centerY.mas_equalTo(self.view.mas_centerY).multipliedBy(1.5);
+    }];
+    [self.view addSubview:self.ratioIndicator2];
+    [self.ratioIndicator2 mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.width.mas_equalTo(self.view.mas_width);
+        make.top.mas_equalTo(self.carouselView2.mas_bottom).offset(10.f);
         make.centerX.mas_equalTo(self.view.mas_centerX);
         make.height.mas_equalTo(30);
     }];
     [self viewControllerReloadData];
 }
 
-- (CJCarouselView *)carouselView {
-    if (_carouselView == nil) {
+- (CJCarouselView *)carouselView1 {
+    if (_carouselView1 == nil) {
         CJCarouselView *aView = [[CJCarouselView alloc] init];
         aView.dataSource = self;
         aView.delegate = self;
         aView.fadeoutAlpha = 0.2;
         aView.enableScrollOnSinglePage = YES;
-        [aView smartUpdateLayoutInsetForPrePageExposed:30 nextPageExposed:30 pageGap:20];
-        _carouselView = aView;
+        [aView smartUpdateLayoutInsetForPrePageExposed:20 nextPageExposed:20 pageGap:10];
+        _carouselView1 = aView;
     }
-    return _carouselView;
+    return _carouselView1;
 }
 
-- (UILabel *)ratioIndicator {
-    if (!_ratioIndicator) {
+- (UILabel *)ratioIndicator1 {
+    if (!_ratioIndicator1) {
         UILabel *aView = [[UILabel alloc] init];
         aView.textAlignment = NSTextAlignmentCenter;
         aView.textColor = [UIColor darkTextColor];
-        _ratioIndicator = aView;
+        _ratioIndicator1 = aView;
     }
-    return _ratioIndicator;
+    return _ratioIndicator1;
+}
+
+- (CJCarouselView *)carouselView2 {
+    if (_carouselView2 == nil) {
+        CJCarouselView *aView = [[CJCarouselView alloc] init];
+        aView.dataSource = self;
+        aView.delegate = self;
+        aView.enableScrollOnSinglePage = YES;
+        aView.loopingDisabled = YES;
+        aView.specialPagingMode = YES;
+        [aView smartUpdateLayoutInsetForPrePageExposed:20 nextPageExposed:20 pageGap:20];
+        aView.specialPagingModeFirstPageOffsetAdjust = 30;
+        aView.specialPagingModeLastPageOffsetAdjust = -30;
+        _carouselView2 = aView;
+    }
+    return _carouselView2;
+}
+
+- (UILabel *)ratioIndicator2 {
+    if (!_ratioIndicator2) {
+        UILabel *aView = [[UILabel alloc] init];
+        aView.textAlignment = NSTextAlignmentCenter;
+        aView.textColor = [UIColor darkTextColor];
+        _ratioIndicator2 = aView;
+    }
+    return _ratioIndicator2;
 }
 
 - (void)viewControllerReloadData {
@@ -83,7 +127,8 @@
         @"https://uploadbeta.com/api/pictures/random/?i=4",
         @"https://uploadbeta.com/api/pictures/random/?i=5",
     ];
-    [self.carouselView reloadData];
+    [self.carouselView1 reloadData];
+    [self.carouselView2 reloadData];
 }
 
 - (NSUInteger)carouselViewNumberOfPages:(CJCarouselView *)pageView {
@@ -105,7 +150,11 @@
 }
 
 - (void)carouselView:(CJCarouselView *)carouselView didScrollToPageIndexRatio:(CGFloat)pageIndexRatio {
-    self.ratioIndicator.text = [NSString stringWithFormat:@"%.8f/%ld", pageIndexRatio + 1, carouselView.numberOfPages];
+    if (carouselView == self.carouselView2) {
+        self.ratioIndicator2.text = [NSString stringWithFormat:@"%.8f/%ld", pageIndexRatio + 1, carouselView.numberOfPages];
+    } else {
+        self.ratioIndicator1.text = [NSString stringWithFormat:@"%.8f/%ld", pageIndexRatio + 1, carouselView.numberOfPages];
+    }
 }
 
 - (void)carouselView:(CJCarouselView *)carouselView didSelectPageAtIndex:(NSUInteger)index {

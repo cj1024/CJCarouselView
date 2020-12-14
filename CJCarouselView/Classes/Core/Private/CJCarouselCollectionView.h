@@ -20,6 +20,7 @@
 
 @property(nonatomic, weak, readwrite) id <CJCarouselCollectionViewManipulationDelegate> manipulationDelegate;
 @property(nonatomic, assign, readwrite) BOOL draggingEnabled;
+@property(nonatomic, assign, readwrite) BOOL specialPagingMode;
 
 - (void)carousel_setContentInset:(UIEdgeInsets)contentInset; // 为防止vc没有禁用automaticallyAdjustsScrollViewInsets产生的问题，原setContentInset将变成空函数，调用此函数进行实际设置
 
