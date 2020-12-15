@@ -100,6 +100,7 @@
         aView.enableScrollOnSinglePage = YES;
         aView.loopingDisabled = YES;
         aView.specialPagingMode = YES;
+        aView.fadeoutAlpha = 0.1;
         [aView smartUpdateLayoutInsetForPrePageExposed:20 nextPageExposed:20 pageGap:20];
         aView.specialPagingModeFirstPageOffsetAdjust = 30;
         aView.specialPagingModeLastPageOffsetAdjust = -30;

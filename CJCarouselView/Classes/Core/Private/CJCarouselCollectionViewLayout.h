@@ -32,6 +32,10 @@
 
 @property(nonatomic, assign, readwrite) UIEdgeInsets contentLayoutInset; // 慎用，默认UIEdgeInsetsZero，重设会触发reloadData
 
+@property(nonatomic, assign, readwrite) CGFloat positionAdjustEnabled;
+@property(nonatomic, assign, readwrite) CGFloat firstItemPositionAdjust;
+@property(nonatomic, assign, readwrite) CGFloat lastItemPositionAdjust;
+
 @property(nonatomic, assign, readonly) BOOL unsafeLayout;
 
 @end
