@@ -52,6 +52,17 @@
     CGFloat insetedCurrentPageIndexForPrePage = currentPageIndex;
     CGFloat insetedCurrentPageIndexForNextPage = currentPageIndex;
     if (self.loopingDisabled) {
+        if (self.positionAdjustEnabled) {
+            if (currentPageIndex < 1 && index <= 1) {
+                if (fabs(pageSize - self.firstItemPositionAdjust) > DBL_EPSILON) {
+                    currentPageIndex = (currentOffset - self.firstItemPositionAdjust) / (pageSize - self.firstItemPositionAdjust);
+                }
+            } else if (currentPageIndex > numberOfItems - 2 && index >= numberOfItems - 2) {
+                if (fabs(pageSize + self.lastItemPositionAdjust) > DBL_EPSILON) {
+                    currentPageIndex = (currentOffset - pageSize * (numberOfItems - 2)) / (pageSize + self.lastItemPositionAdjust) + (numberOfItems - 2);
+                }
+            }
+        }
         switch (self.layoutDirection) {
             case eCJCarouselViewLayoutDirectionVertial:
                 attributes.frame = CGRectMake(0, index * pageSize, pageWidth, pageHeight);
