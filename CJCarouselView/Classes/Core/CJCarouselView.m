@@ -375,11 +375,23 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 - (void)notifyScrollRatio:(CGFloat)itemSize offset:(CGFloat)offset {
     if (itemSize > 0) {
         CGFloat indexRatio = offset / itemSize;
-        if (!self.loopingDisabled) {
+        if (self.loopingDisabled) {
+            if (self.collectionViewLayout.positionAdjustEnabled) {
+                    if (indexRatio < 1) {
+                        if (fabs(itemSize - self.specialPagingModeFirstPageOffsetAdjust) > DBL_EPSILON) {
+                            indexRatio = (offset - self.specialPagingModeFirstPageOffsetAdjust) / (itemSize - self.specialPagingModeFirstPageOffsetAdjust);
+                        }
+                    } else if (indexRatio > self.numberOfPages - 2) {
+                        if (fabs(itemSize + self.specialPagingModeLastPageOffsetAdjust) > DBL_EPSILON) {
+                            indexRatio = (offset - itemSize * (self.numberOfPages - 2)) / (itemSize + self.specialPagingModeLastPageOffsetAdjust) + (self.numberOfPages - 2);
+                        }
+                    }
+            }
+        } else {
             indexRatio -= 1.0;
-        }
-        while (indexRatio >= self.numberOfPages) {
-            indexRatio -= self.numberOfPages;
+            while (indexRatio >= self.numberOfPages) {
+                indexRatio -= self.numberOfPages;
+            }
         }
         if ([self.delegate respondsToSelector:@selector(carouselView:didScrollToPageIndexRatio:)]) {
             [self.delegate carouselView:self didScrollToPageIndexRatio:indexRatio];
@@ -423,7 +435,8 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 }
 
 - (void)updateRealPagingMode {
-    self.collectionView.pagingEnabled = ![self specialPagingModeEnabled];
+    self.collectionViewLayout.positionAdjustEnabled = [self specialPagingModeEnabled];
+    self.collectionView.pagingEnabled = !self.collectionViewLayout.positionAdjustEnabled;
     if (!self.collectionView.pagingEnabled) {
         self.collectionView.decelerationRate = UIScrollViewDecelerationRateFast;
     }
@@ -625,6 +638,26 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 - (void)setSpecialPagingMode:(BOOL)specialPagingMode {
     ((CJCarouselCollectionView *)self.collectionView).specialPagingMode = specialPagingMode;
     [self updateRealPagingMode];
+}
+
+@dynamic specialPagingModeFirstPageOffsetAdjust;
+
+- (CGFloat)specialPagingModeFirstPageOffsetAdjust {
+    return self.collectionViewLayout.firstItemPositionAdjust;
+}
+
+- (void)setSpecialPagingModeFirstPageOffsetAdjust:(CGFloat)specialPagingModeFirstPageOffsetAdjust {
+    self.collectionViewLayout.firstItemPositionAdjust = specialPagingModeFirstPageOffsetAdjust;
+}
+
+@dynamic specialPagingModeLastPageOffsetAdjust;
+
+- (CGFloat)specialPagingModeLastPageOffsetAdjust {
+    return self.collectionViewLayout.lastItemPositionAdjust;
+}
+
+- (void)setSpecialPagingModeLastPageOffsetAdjust:(CGFloat)specialPagingModeLastPageOffsetAdjust {
+    self.collectionViewLayout.lastItemPositionAdjust = specialPagingModeLastPageOffsetAdjust;
 }
 
 - (void)scrollToPageAtIndex:(NSInteger)index animated:(BOOL)animated {
