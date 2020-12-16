@@ -4,6 +4,8 @@ platform :ios, '9.0'
 
 target 'CJCarouselView_Example' do
   pod 'CJCarouselView', :path => '../'
+  pod 'CJCollectionViewAdapter'
+  pod 'CJCollectionViewAdapter/Cell'
   pod 'SDWebImage'
   pod 'Masonry'
   pod 'Toast'

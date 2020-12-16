@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06A6A7F22589DFE40069A3BE /* CJCarouselViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 06A6A7F12589DFE40069A3BE /* CJCarouselViewController.m */; };
+		06A6A7FA2589E5660069A3BE /* CJCollectionViewTestSectionData.m in Sources */ = {isa = PBXBuildFile; fileRef = 06A6A7F92589E5660069A3BE /* CJCollectionViewTestSectionData.m */; };
 		10C355C18065DA845F49FE23 /* Pods_CJCarouselView_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B9A90BFC512C63A305562A28 /* Pods_CJCarouselView_Tests.framework */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
@@ -37,6 +39,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		06A6A7F12589DFE40069A3BE /* CJCarouselViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CJCarouselViewController.m; sourceTree = "<group>"; };
+		06A6A7F52589DFF10069A3BE /* CJCarouselViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CJCarouselViewController.h; sourceTree = "<group>"; };
+		06A6A7F82589E55B0069A3BE /* CJCollectionViewTestSectionData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CJCollectionViewTestSectionData.h; sourceTree = "<group>"; };
+		06A6A7F92589E5660069A3BE /* CJCollectionViewTestSectionData.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CJCollectionViewTestSectionData.m; sourceTree = "<group>"; };
 		1740CCA2A3B97D296D3D2ED4 /* CJCarouselView.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = CJCarouselView.podspec; path = ../CJCarouselView.podspec; sourceTree = "<group>"; };
 		31675C5BA3382E847D5BC689 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		3CC29528682573EFDFA97C73 /* Pods-CJCarouselView_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CJCarouselView_Example.release.xcconfig"; path = "Target Support Files/Pods-CJCarouselView_Example/Pods-CJCarouselView_Example.release.xcconfig"; sourceTree = "<group>"; };
@@ -146,6 +152,10 @@
 				6003F59C195388D20070C39A /* CJAppDelegate.h */,
 				6003F59D195388D20070C39A /* CJAppDelegate.m */,
 				873B8AEA1B1F5CCA007FD442 /* Main.storyboard */,
+				06A6A7F52589DFF10069A3BE /* CJCarouselViewController.h */,
+				06A6A7F12589DFE40069A3BE /* CJCarouselViewController.m */,
+				06A6A7F82589E55B0069A3BE /* CJCollectionViewTestSectionData.h */,
+				06A6A7F92589E5660069A3BE /* CJCollectionViewTestSectionData.m */,
 				6003F5A5195388D20070C39A /* CJViewController.h */,
 				6003F5A6195388D20070C39A /* CJViewController.m */,
 				71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */,
@@ -303,6 +313,7 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-CJCarouselView_Example/Pods-CJCarouselView_Example-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/CJCarouselView/CJCarouselView.framework",
+				"${BUILT_PRODUCTS_DIR}/CJCollectionViewAdapter/CJCollectionViewAdapter.framework",
 				"${BUILT_PRODUCTS_DIR}/FLEX/FLEX.framework",
 				"${BUILT_PRODUCTS_DIR}/Masonry/Masonry.framework",
 				"${BUILT_PRODUCTS_DIR}/SDWebImage/SDWebImage.framework",
@@ -311,6 +322,7 @@
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CJCarouselView.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CJCollectionViewAdapter.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FLEX.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Masonry.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImage.framework",
@@ -375,6 +387,8 @@
 				6003F59E195388D20070C39A /* CJAppDelegate.m in Sources */,
 				6003F5A7195388D20070C39A /* CJViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
+				06A6A7F22589DFE40069A3BE /* CJCarouselViewController.m in Sources */,
+				06A6A7FA2589E5660069A3BE /* CJCollectionViewTestSectionData.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
