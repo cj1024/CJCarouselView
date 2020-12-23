@@ -1,18 +1,16 @@
 use_frameworks!
 
-platform :ios, '9.0'
+platform :ios, '8.0'
 
 target 'CJCarouselView_Example' do
   pod 'CJCarouselView', :path => '../'
   pod 'CJCollectionViewAdapter'
   pod 'CJCollectionViewAdapter/Cell'
-  pod 'SDWebImage'
-  pod 'Masonry'
-  pod 'Toast'
-  pod 'FLEX'
+  pod 'SDWebImage', :inhibit_warnings => true
+  pod 'Masonry', :inhibit_warnings => true
+  pod 'Toast', :inhibit_warnings => true
+  pod 'FLEX', :inhibit_warnings => true
   target 'CJCarouselView_Tests' do
     inherit! :search_paths
-
-    
   end
 end
