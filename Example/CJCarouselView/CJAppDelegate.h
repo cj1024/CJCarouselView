@@ -8,6 +8,10 @@
 
 @import UIKit;
 
+@interface CJApplication : UIApplication
+
+@end
+
 @interface CJAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;

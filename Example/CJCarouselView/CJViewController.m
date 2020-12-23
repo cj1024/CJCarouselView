@@ -8,23 +8,23 @@
 
 #import "CJViewController.h"
 #import <CJCarouselView/CJCarouselView.h>
-#import <Masonry/Masonry.h>
-#import <SDWebImage/SDWebImage.h>
-#import <Toast/Toast.h>
+#import <CJCollectionViewAdapter/CJCollectionViewAdapter.h>
+#import "CJCollectionViewTestSectionData.h"
+#import "CJCarouselViewController.h"
 
-@interface CJViewController () <CJCarouselViewDataSource, CJCarouselViewDelegate>
+@interface CJViewController ()
 
-@property(nonatomic, copy, readwrite) NSArray <NSString *> *imageUrls;
-
-@property(nonatomic, strong, readwrite) CJCarouselView *carouselView1;
-@property(nonatomic, strong, readwrite) UILabel *ratioIndicator1;
-
-@property(nonatomic, strong, readwrite) CJCarouselView *carouselView2;
-@property(nonatomic, strong, readwrite) UILabel *ratioIndicator2;
+@property(nonatomic, strong, readwrite) UICollectionView *collectionView;
+@property(nonatomic, strong, readwrite) CJCollectionViewAdapter *adapter;
 
 @end
 
 @implementation CJViewController
+
+- (void)dealloc {
+    _collectionView.dataSource = nil;
+    _collectionView.delegate = nil;
+}
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     self = [super initWithNibName:nil bundle:nil];
@@ -37,129 +37,87 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor whiteColor];
-    [self.view addSubview:self.carouselView1];
-    [self.carouselView1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(self.view.mas_width);
-        make.height.mas_equalTo(self.view.mas_width).multipliedBy(28. / 75.);
-        make.centerX.mas_equalTo(self.view.mas_centerX);
-        make.centerY.mas_equalTo(self.view.mas_centerY).multipliedBy(0.5);
-    }];
-    [self.view addSubview:self.ratioIndicator1];
-    [self.ratioIndicator1 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(self.view.mas_width);
-        make.top.mas_equalTo(self.carouselView1.mas_bottom).offset(10.f);
-        make.centerX.mas_equalTo(self.view.mas_centerX);
-        make.height.mas_equalTo(30);
-    }];
-    [self.view addSubview:self.carouselView2];
-    [self.carouselView2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(self.view.mas_width);
-        make.height.mas_equalTo(self.view.mas_width).multipliedBy(28. / 75.);
-        make.centerX.mas_equalTo(self.view.mas_centerX);
-        make.centerY.mas_equalTo(self.view.mas_centerY).multipliedBy(1.5);
-    }];
-    [self.view addSubview:self.ratioIndicator2];
-    [self.ratioIndicator2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.width.mas_equalTo(self.view.mas_width);
-        make.top.mas_equalTo(self.carouselView2.mas_bottom).offset(10.f);
-        make.centerX.mas_equalTo(self.view.mas_centerX);
-        make.height.mas_equalTo(30);
-    }];
+    if (@available(iOS 13.0, *)) {
+        self.view.backgroundColor = [UIColor systemBackgroundColor];
+        self.collectionView.backgroundColor = [UIColor secondarySystemBackgroundColor];
+    } else {
+        self.view.backgroundColor = [UIColor whiteColor];
+        self.collectionView.backgroundColor = [UIColor lightGrayColor];
+    }
     [self viewControllerReloadData];
 }
 
-- (CJCarouselView *)carouselView1 {
-    if (_carouselView1 == nil) {
-        CJCarouselView *aView = [[CJCarouselView alloc] init];
-        aView.dataSource = self;
-        aView.delegate = self;
-        aView.fadeoutAlpha = 0.2;
-        aView.enableScrollOnSinglePage = YES;
-        [aView smartUpdateLayoutInsetForPrePageExposed:20 nextPageExposed:20 pageGap:10];
-        _carouselView1 = aView;
-    }
-    return _carouselView1;
+- (void)viewSafeAreaInsetsDidChange {
+    [super viewSafeAreaInsetsDidChange];
+    [self layoutCollectionView];
 }
 
-- (UILabel *)ratioIndicator1 {
-    if (!_ratioIndicator1) {
-        UILabel *aView = [[UILabel alloc] init];
-        aView.textAlignment = NSTextAlignmentCenter;
-        aView.textColor = [UIColor darkTextColor];
-        _ratioIndicator1 = aView;
+- (void)layoutCollectionView {
+    if (self.collectionView.superview != self.view) {
+        [self.view addSubview:self.collectionView];
     }
-    return _ratioIndicator1;
+    self.collectionView.frame = self.view.bounds;
+    if (@available(iOS 11.0, *)) {
+        self.adapter.stickyContentInset = [NSValue valueWithUIEdgeInsets:self.view.safeAreaInsets];
+        self.collectionView.scrollIndicatorInsets = self.view.safeAreaInsets;
+        self.collectionView.contentInset = self.view.safeAreaInsets;
+    }
 }
 
-- (CJCarouselView *)carouselView2 {
-    if (_carouselView2 == nil) {
-        CJCarouselView *aView = [[CJCarouselView alloc] init];
-        aView.dataSource = self;
-        aView.delegate = self;
-        aView.enableScrollOnSinglePage = YES;
-        aView.loopingDisabled = YES;
-        aView.specialPagingMode = YES;
-        aView.fadeoutAlpha = 0.1;
-        [aView smartUpdateLayoutInsetForPrePageExposed:20 nextPageExposed:20 pageGap:20];
-        aView.specialPagingModeFirstPageOffsetAdjust = 30;
-        aView.specialPagingModeLastPageOffsetAdjust = -30;
-        _carouselView2 = aView;
+- (UICollectionView *)collectionView {
+    if (_collectionView == nil) {
+        UICollectionView *aView = [[UICollectionView alloc] initWithFrame:self.view.bounds collectionViewLayout:self.adapter.wrappedCollectionViewLayout];
+        [self.adapter attachCollectionView:aView];
+        aView.alwaysBounceVertical = YES;
+        aView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.1];
+        if (@available(iOS 11.0, *)) {
+            aView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
+        if (@available(iOS 13.0, *)) {
+            aView.automaticallyAdjustsScrollIndicatorInsets = NO;
+        }
+        _collectionView = aView;
     }
-    return _carouselView2;
+    return _collectionView;
 }
 
-- (UILabel *)ratioIndicator2 {
-    if (!_ratioIndicator2) {
-        UILabel *aView = [[UILabel alloc] init];
-        aView.textAlignment = NSTextAlignmentCenter;
-        aView.textColor = [UIColor darkTextColor];
-        _ratioIndicator2 = aView;
+- (CJCollectionViewAdapter *)adapter {
+    if (_adapter == nil) {
+        CJCollectionViewAdapter *adapter = [[CJCollectionViewAdapter alloc] init];
+        _adapter = adapter;
     }
-    return _ratioIndicator2;
+    return _adapter;
 }
 
 - (void)viewControllerReloadData {
-    self.imageUrls = @[
-        @"https://uploadbeta.com/api/pictures/random/?i=0",
-        @"https://uploadbeta.com/api/pictures/random/?i=1",
-        @"https://uploadbeta.com/api/pictures/random/?i=2",
-        @"https://uploadbeta.com/api/pictures/random/?i=3",
-        @"https://uploadbeta.com/api/pictures/random/?i=4",
-        @"https://uploadbeta.com/api/pictures/random/?i=5",
-    ];
-    [self.carouselView1 reloadData];
-    [self.carouselView2 reloadData];
-}
-
-- (NSUInteger)carouselViewNumberOfPages:(CJCarouselView *)pageView {
-    return [self.imageUrls isKindOfClass:[NSArray class]] ? self.imageUrls.count : 0;
-}
-
-- (CJCarouselViewPage *)carouselView:(CJCarouselView *)pageView pageViewAtIndex:(NSUInteger)index reuseableView:(CJCarouselViewPage *)reuseableView {
-    if (!reuseableView) {
-        reuseableView = [[CJCarouselViewPage alloc] init];
-        reuseableView.contentLabel.textColor = [UIColor whiteColor];
-        reuseableView.contentLabel.textAlignment = NSTextAlignmentCenter;
-        reuseableView.imageView.layer.cornerRadius = 8.f;
-        [reuseableView.imageView setContentMode:UIViewContentModeScaleAspectFill];
-        reuseableView.enableRippleHighlightStyle = YES;
-    }
-    [reuseableView.imageView sd_setImageWithURL:[NSURL URLWithString:self.imageUrls[index]]];
-    reuseableView.contentLabel.text = [NSString stringWithFormat:@"%ld", index];
-    return reuseableView;
-}
-
-- (void)carouselView:(CJCarouselView *)carouselView didScrollToPageIndexRatio:(CGFloat)pageIndexRatio {
-    if (carouselView == self.carouselView2) {
-        self.ratioIndicator2.text = [NSString stringWithFormat:@"%.8f/%ld", pageIndexRatio + 1, carouselView.numberOfPages];
-    } else {
-        self.ratioIndicator1.text = [NSString stringWithFormat:@"%.8f/%ld", pageIndexRatio + 1, carouselView.numberOfPages];
-    }
-}
-
-- (void)carouselView:(CJCarouselView *)carouselView didSelectPageAtIndex:(NSUInteger)index {
-    [self.view makeToast:[NSString stringWithFormat:@"Selected Page %ld", index]];
+    [self.adapter updateSections:@[
+        [[CJCollectionViewTestSectionData alloc] initWithTitle:@"case 1"
+                                                          desc:@"PrePageExposed:20\nNextPageExposed:20\nPageGap:10"
+                                                   actionBlock:^{
+            CJCarouselViewController *vc = [[CJCarouselViewController alloc] initWithNibName:nil bundle:nil];
+            [vc.carouselView smartUpdateLayoutInsetForPrePageExposed:20 nextPageExposed:20 pageGap:10];
+            [self.navigationController pushViewController:vc animated:YES];
+        }],
+        [[CJCollectionViewTestSectionData alloc] initWithTitle:@"case 2"
+                                                              desc:@"PrePageExposed:0\nNextPageExposed:40\nPageGap:10"
+                                                       actionBlock:^{
+            CJCarouselViewController *vc = [[CJCarouselViewController alloc] initWithNibName:nil bundle:nil];
+            [vc.carouselView smartUpdateLayoutInsetForPrePageExposed:0 nextPageExposed:40 pageGap:10];
+            [self.navigationController pushViewController:vc animated:YES];
+        }],
+        [[CJCollectionViewTestSectionData alloc] initWithTitle:@"case 3"
+                                                              desc:@"SpecialPagingMode:On\nPrePageExposed:30\nNextPageExposed:30\nPageGap:10"
+                                                       actionBlock:^{
+            CJCarouselViewController *vc = [[CJCarouselViewController alloc] initWithNibName:nil bundle:nil];
+            vc.carouselView.loopingDisabled = YES;
+            vc.carouselView.specialPagingMode = YES;
+            vc.carouselView.specialPagingModeFirstPageOffsetAdjust = 30;
+            vc.carouselView.specialPagingModeLastPageOffsetAdjust = -30;
+            [vc.carouselView smartUpdateLayoutInsetForPrePageExposed:30 nextPageExposed:30 pageGap:10];
+            
+            [self.navigationController pushViewController:vc animated:YES];
+        }]
+    ]];
 }
 
 @end
