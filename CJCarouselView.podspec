@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'CJCarouselView'
-  s.version          = '0.1.2.1'
+  s.version          = '0.1.2.2'
   s.summary          = 'A Carousel View In Objective-C'
   s.description      = <<-DESC
 UITableView Style API.
@@ -17,7 +17,7 @@ Support Fade Transition.
   s.source           = { :git => 'https://github.com/cj1024/CJCarouselView.git', :tag => s.version.to_s }
   s.screenshots      = 'https://ftp.bmp.ovh/imgs/2020/12/68011dc7fba03ec0.gif'
 
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '8.0'
 
   s.subspec 'Core' do |core|
     core.frameworks = 'UIKit'
