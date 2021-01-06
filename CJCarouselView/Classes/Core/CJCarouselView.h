@@ -100,6 +100,12 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewLayoutDirection){
  */
 - (void)stopAutoScroll;
 
+- (NSArray <__kindof CJCarouselViewPage *> *)visablePages;
+
+- (NSArray <NSNumber *> *)visablePageIndexes;
+
+- (CJCarouselViewPage *)pageAtIndex:(NSUInteger)index;
+
 @end
 
 @interface CJCarouselView (LayoutInset)

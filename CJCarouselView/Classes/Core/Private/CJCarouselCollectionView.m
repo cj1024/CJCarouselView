@@ -49,6 +49,13 @@
     }
 }
 
+- (void)ignoreTouch:(UITouch*)touch forEvent:(UIEvent*)event {
+    [super ignoreTouch:touch forEvent:event];
+    if ([self.manipulationDelegate respondsToSelector:@selector(carousel_gestureRecognizerTouchCancelled:)]) {
+        [self.manipulationDelegate carousel_gestureRecognizerTouchCancelled:self];
+    }
+}
+
 @end
 
 @interface CJCarouselCollectionView () <CJCarouselCollectionViewGestureRecognizerDelegate>
