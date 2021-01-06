@@ -151,6 +151,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     cell.backgroundColor = [UIColor clearColor];
     if ([self.dataSource respondsToSelector:@selector(carouselView:pageViewAtIndex:reuseableView:)]) {
         CJCarouselViewPage *pageView = [self.dataSource carouselView:self pageViewAtIndex:[self wrappedIndex:indexPath.item] reuseableView:cell.pageView];
+        pageView.index = [self wrappedIndex:indexPath.item];
         cell.pageView = pageView;
     }
     return cell;
@@ -748,9 +749,9 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 }
 
 - (NSArray <__kindof CJCarouselViewPage *> *)visablePages {
-    NSMutableArray <__kindof DDJBCarouselViewPage *> *result = [NSMutableArray array];
-    [[self.collectionView visibleCells] enumerateObjectsUsingBlock:^(DDJBCarouselCollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([obj isKindOfClass:[DDJBCarouselCollectionViewCell class]] && [obj.pageView isKindOfClass:[DDJBCarouselViewPage class]]) {
+    NSMutableArray <__kindof CJCarouselViewPage *> *result = [NSMutableArray array];
+    [[self.collectionView visibleCells] enumerateObjectsUsingBlock:^(CJCarouselCollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([obj isKindOfClass:[CJCarouselCollectionViewCell class]] && [obj.pageView isKindOfClass:[CJCarouselViewPage class]]) {
             [result addObject:obj.pageView];
         }
     }];
@@ -760,16 +761,16 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 - (NSArray <NSNumber *> *)visablePageIndexes {
     NSMutableArray <NSNumber *> *result = [NSMutableArray array];
     [[self.collectionView indexPathsForVisibleItems] enumerateObjectsUsingBlock:^(NSIndexPath * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        [result addObject:@(obj.item)];
+        [result addObject:@([self wrappedIndex:obj.item])];
     }];
     return result;
 }
 
 - (CJCarouselViewPage *)pageAtIndex:(NSUInteger)index {
-    if (index < [self.collectionView numberOfItemsInSection:0]) {
-        DDJBCarouselCollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:index inSection:0]];
-        if ([cell isKindOfClass:[DDJBCarouselCollectionViewCell class]]) {
-            return cell.pageView;
+    NSArray <__kindof CJCarouselViewPage *> *visiblePages = [self visablePages];
+    for (CJCarouselViewPage *page in visiblePages) {
+        if (page.index == index) {
+            return page;
         }
     }
     return nil;
