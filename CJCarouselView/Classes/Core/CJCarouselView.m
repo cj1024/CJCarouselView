@@ -747,6 +747,34 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     }
 }
 
+- (NSArray <__kindof CJCarouselViewPage *> *)visablePages {
+    NSMutableArray <__kindof DDJBCarouselViewPage *> *result = [NSMutableArray array];
+    [[self.collectionView visibleCells] enumerateObjectsUsingBlock:^(DDJBCarouselCollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([obj isKindOfClass:[DDJBCarouselCollectionViewCell class]] && [obj.pageView isKindOfClass:[DDJBCarouselViewPage class]]) {
+            [result addObject:obj.pageView];
+        }
+    }];
+    return result.copy;
+}
+
+- (NSArray <NSNumber *> *)visablePageIndexes {
+    NSMutableArray <NSNumber *> *result = [NSMutableArray array];
+    [[self.collectionView indexPathsForVisibleItems] enumerateObjectsUsingBlock:^(NSIndexPath * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [result addObject:@(obj.item)];
+    }];
+    return result;
+}
+
+- (CJCarouselViewPage *)pageAtIndex:(NSUInteger)index {
+    if (index < [self.collectionView numberOfItemsInSection:0]) {
+        DDJBCarouselCollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:index inSection:0]];
+        if ([cell isKindOfClass:[DDJBCarouselCollectionViewCell class]]) {
+            return cell.pageView;
+        }
+    }
+    return nil;
+}
+
 @end
 
 @implementation CJCarouselView (LayoutInset)

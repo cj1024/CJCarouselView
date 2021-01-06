@@ -114,7 +114,13 @@
             vc.carouselView.specialPagingModeFirstPageOffsetAdjust = 30;
             vc.carouselView.specialPagingModeLastPageOffsetAdjust = -30;
             [vc.carouselView smartUpdateLayoutInsetForPrePageExposed:30 nextPageExposed:30 pageGap:10];
-            
+            [self.navigationController pushViewController:vc animated:YES];
+        }],
+        [[CJCollectionViewTestSectionData alloc] initWithTitle:@"case 4"
+                                                              desc:@"PrePageExposed:0\nNextPageExposed:200\nPageGap:10"
+                                                       actionBlock:^{
+            CJCarouselViewController *vc = [[CJCarouselViewController alloc] initWithNibName:nil bundle:nil];
+            [vc.carouselView smartUpdateLayoutInsetForPrePageExposed:0 nextPageExposed:200 pageGap:10];
             [self.navigationController pushViewController:vc animated:YES];
         }]
     ]];
