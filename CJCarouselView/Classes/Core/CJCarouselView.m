@@ -21,6 +21,12 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewPageOption) {
 
 static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 
+@interface CJCarouselViewPage (Internal)
+
+@property(nonatomic, assign, readwrite) NSUInteger pageIndex;
+
+@end
+
 @interface CJCarouselView () <UICollectionViewDataSource, UICollectionViewDelegate, CJCarouselCollectionViewManipulationDelegate>
 
 @property(nonatomic, assign, readwrite) NSUInteger currentPageIndex;
@@ -32,6 +38,8 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 @property(nonatomic, strong, readwrite) NSTimer *timer; // 自动滚动定时器
 @property(nonatomic, assign, readwrite) BOOL autoScroll; // 是否开启自动滚动
 @property(nonatomic, assign, readonly) NSUInteger unsafeModeMinItemCount;
+
+@property(nonatomic, copy, readwrite) dispatch_block_t scrollAnimationCompletionCallback;
 
 @end
 
@@ -150,8 +158,12 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     cell.contentLayoutInset = self.contentLayoutInset;
     cell.backgroundColor = [UIColor clearColor];
     if ([self.dataSource respondsToSelector:@selector(carouselView:pageViewAtIndex:reuseableView:)]) {
-        CJCarouselViewPage *pageView = [self.dataSource carouselView:self pageViewAtIndex:[self wrappedIndex:indexPath.item] reuseableView:cell.pageView];
-        pageView.index = [self wrappedIndex:indexPath.item];
+        CJCarouselViewPage *reusePageView = cell.pageView;
+        if ([reusePageView isKindOfClass:[CJCarouselViewPage class]]) {
+            reusePageView.pageIndex = [self wrappedIndex:indexPath.item];
+        }
+        CJCarouselViewPage *pageView = [self.dataSource carouselView:self pageViewAtIndex:[self wrappedIndex:indexPath.item] reuseableView:reusePageView];
+        pageView.pageIndex = [self wrappedIndex:indexPath.item];
         cell.pageView = pageView;
     }
     return cell;
@@ -276,6 +288,13 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     }
 }
 
+- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView {
+    if (self.scrollAnimationCompletionCallback) {
+        self.scrollAnimationCompletionCallback();
+    }
+    self.scrollAnimationCompletionCallback = nil;
+}
+
 #pragma mark -
 #pragma mark CJCarouselCollectionViewManipulationDelegate
 
@@ -333,14 +352,12 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 }
 
 - (void)updateCurrentPageIndex:(NSUInteger)index {
-    [self willChangeValueForKey:@"currentPageIndex"];
     if (self.currentPageIndex != index) {
         self.currentPageIndex = index;
         if ([self.delegate respondsToSelector:@selector(carouselView:didScrollToPageAtIndex:)]) {
             [self.delegate carouselView:self didScrollToPageAtIndex:index];
         }
     }
-    [self didChangeValueForKey:@"currentPageIndex"];
 }
 
 - (void)didScrollToNextPage {
@@ -360,16 +377,33 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
                  index:(NSUInteger)index
                 option:(eCJCarouselViewPageOption)option {
     [self.collectionView setContentOffset:offset animated:animated];
-    [self updateCurrentPageIndex:index];
-    switch (option) {
-        case eCJCarouselViewPageOptionNext:
-            [self didScrollToNextPage];
-            break;
-        case eCJCarouselViewPageOptionPre:
-            [self didScrollToPrePage];
-            break;
-        default:
-            break;
+    if (animated) {
+        __weak typeof(self) weakSelf = self;
+        self.scrollAnimationCompletionCallback = ^{
+            [weakSelf updateCurrentPageIndex:index];
+            switch (option) {
+                case eCJCarouselViewPageOptionNext:
+                    [weakSelf didScrollToNextPage];
+                    break;
+                case eCJCarouselViewPageOptionPre:
+                    [weakSelf didScrollToPrePage];
+                    break;
+                default:
+                    break;
+            }
+        };
+    } else {
+        [self updateCurrentPageIndex:index];
+        switch (option) {
+            case eCJCarouselViewPageOptionNext:
+                [self didScrollToNextPage];
+                break;
+            case eCJCarouselViewPageOptionPre:
+                [self didScrollToPrePage];
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -748,9 +782,10 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     }
 }
 
-- (NSArray <__kindof CJCarouselViewPage *> *)visablePages {
+- (NSArray <__kindof CJCarouselViewPage *> *)visiblePages {
     NSMutableArray <__kindof CJCarouselViewPage *> *result = [NSMutableArray array];
-    [[self.collectionView visibleCells] enumerateObjectsUsingBlock:^(CJCarouselCollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    NSArray<__kindof UICollectionViewCell *> *visibleCells = [self.collectionView visibleCells];
+    [visibleCells enumerateObjectsUsingBlock:^(CJCarouselCollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if ([obj isKindOfClass:[CJCarouselCollectionViewCell class]] && [obj.pageView isKindOfClass:[CJCarouselViewPage class]]) {
             [result addObject:obj.pageView];
         }
@@ -758,22 +793,24 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     return result.copy;
 }
 
-- (NSArray <NSNumber *> *)visablePageIndexes {
-    NSMutableArray <NSNumber *> *result = [NSMutableArray array];
-    [[self.collectionView indexPathsForVisibleItems] enumerateObjectsUsingBlock:^(NSIndexPath * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        [result addObject:@([self wrappedIndex:obj.item])];
+- (NSIndexSet *)visiblePageIndexes {
+    NSMutableIndexSet *result = [NSMutableIndexSet indexSet];
+    NSArray <__kindof CJCarouselViewPage *> *visiblePages = [self visiblePages];
+    [visiblePages enumerateObjectsUsingBlock:^(__kindof CJCarouselViewPage * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [result addIndex:obj.pageIndex];
     }];
-    return result;
+    return result.copy;
 }
 
-- (CJCarouselViewPage *)pageAtIndex:(NSUInteger)index {
-    NSArray <__kindof CJCarouselViewPage *> *visiblePages = [self visablePages];
-    for (CJCarouselViewPage *page in visiblePages) {
-        if (page.index == index) {
-            return page;
+- (NSArray <__kindof CJCarouselViewPage *> *)pageAtIndex:(NSUInteger)index {
+    NSMutableArray <__kindof CJCarouselViewPage *> *result = [NSMutableArray array];
+    NSArray <__kindof CJCarouselViewPage *> *visiblePages = [self visiblePages];
+    [visiblePages enumerateObjectsUsingBlock:^(__kindof CJCarouselViewPage * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.pageIndex == index) {
+            [result addObject:obj];
         }
-    }
-    return nil;
+    }];
+    return result.copy;
 }
 
 @end
@@ -815,5 +852,11 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
         self.contentLayoutInset = UIEdgeInsetsMake(nextPageExposed + pageGap, 0, prePageExposed + pageGap, 0);
     }
 }
+
+@end
+
+@implementation CJCarouselViewPage (Internal)
+
+@dynamic pageIndex;
 
 @end

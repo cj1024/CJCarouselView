@@ -100,11 +100,20 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewLayoutDirection){
  */
 - (void)stopAutoScroll;
 
-- (NSArray <__kindof CJCarouselViewPage *> *)visablePages;
+/**
+ *  获取当前可见的页面
+ */
+- (NSArray <__kindof CJCarouselViewPage *> *)visiblePages;
 
-- (NSArray <NSNumber *> *)visablePageIndexes;
+/**
+ *  获取当前可见的页面Index
+ */
+- (NSIndexSet *)visiblePageIndexes;
 
-- (CJCarouselViewPage *)pageAtIndex:(NSUInteger)index;
+/**
+ *  获取第N页视图（如果可见），由于循环滚动，可能出现多页
+ */
+- (NSArray <__kindof CJCarouselViewPage *> *)pageAtIndex:(NSUInteger)index;
 
 @end
 
