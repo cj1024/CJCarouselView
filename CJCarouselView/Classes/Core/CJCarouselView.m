@@ -97,6 +97,17 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     self.clipsToBounds = YES;
 }
 
+- (void)willMoveToWindow:(UIWindow *)newWindow {
+    [super willMoveToWindow:newWindow];
+    if ([newWindow isKindOfClass:[UIWindow class]]) {
+        [self setupTimer];
+    } else {
+        if (self.timer) {
+            [self.timer invalidate];
+        }
+    }
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
     self.collectionView.frame = UIEdgeInsetsInsetRect(self.bounds, UIEdgeInsetsMake(-self.holderLayoutInset.bottom, -self.holderLayoutInset.right, -self.holderLayoutInset.top, -self.holderLayoutInset.left));
@@ -376,8 +387,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
               animated:(BOOL)animated
                  index:(NSUInteger)index
                 option:(eCJCarouselViewPageOption)option {
-    [self.collectionView setContentOffset:offset animated:animated];
-    if (animated) {
+    if (animated && !CGPointEqualToPoint(self.collectionView.contentOffset, offset)) {
         __weak typeof(self) weakSelf = self;
         self.scrollAnimationCompletionCallback = ^{
             [weakSelf updateCurrentPageIndex:index];
@@ -392,7 +402,9 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
                     break;
             }
         };
+        [self.collectionView setContentOffset:offset animated:YES];
     } else {
+        [self.collectionView setContentOffset:offset animated:NO];
         [self updateCurrentPageIndex:index];
         switch (option) {
             case eCJCarouselViewPageOptionNext:
