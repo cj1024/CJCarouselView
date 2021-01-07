@@ -10,6 +10,8 @@
 
 @interface CJCarouselViewPage ()
 
+@property(nonatomic, assign, readwrite) NSUInteger pageIndex;
+
 @property(nonatomic, strong, readwrite) UIImageView *imageView;
 
 @property(nonatomic, strong, readwrite) UIView *rippleHolder;

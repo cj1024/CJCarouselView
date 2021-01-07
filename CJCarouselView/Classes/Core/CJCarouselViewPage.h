@@ -16,8 +16,6 @@
  */
 @interface CJCarouselViewPage : UIView
 
-@property(nonatomic, assign, readwrite) NSUInteger index;
-
 @property(nonatomic, strong, readonly) UIView *contentView;
 @property(nonatomic, strong, readonly) UIView *backgroundView;
 @property(nonatomic, strong, readonly) UIView *selectedBackgroundView;
