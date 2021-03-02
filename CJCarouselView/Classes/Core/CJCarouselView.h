@@ -226,6 +226,15 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewLayoutDirection){
 
 @optional
 
+/**
+ *  CJCarouselView自动滚动定时器RunLoopMode
+ *
+ *  @param carouselView  carouselView
+ *
+ *  @return 自动滚动定时器RunLoopMode，不实现默认NSDefaultRunLoopMode
+ */
+- (NSRunLoopMode)carouselViewAutoScrollRunLoopMode:(CJCarouselView *)carouselView;
+
 @end
 
 @protocol CJCarouselViewScrollViewDelegateBridge <NSObject>
