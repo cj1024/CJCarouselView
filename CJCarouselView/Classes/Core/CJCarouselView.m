@@ -346,11 +346,16 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
         [self.timer invalidate];
     }
     if (self.autoScroll) {
-            self.timer = [NSTimer scheduledTimerWithTimeInterval:self.autoScrollInterval
-                                                          target:self
-                                                        selector:@selector(autoScrollTimerFired:)
-                                                        userInfo:nil
-                                                         repeats:YES];
+        self.timer = [NSTimer timerWithTimeInterval:self.autoScrollInterval
+                                             target:self
+                                           selector:@selector(autoScrollTimerFired:)
+                                           userInfo:nil
+                                            repeats:YES];
+        NSRunLoopMode mode = NSDefaultRunLoopMode;
+        if ([self.dataSource respondsToSelector:@selector(carouselViewAutoScrollRunLoopMode:)]) {
+            mode = [self.dataSource carouselViewAutoScrollRunLoopMode:self];
+        }
+        [[NSRunLoop currentRunLoop] addTimer:self.timer forMode:mode];
     }
 }
 

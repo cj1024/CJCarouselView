@@ -87,12 +87,12 @@
 - (void)viewControllerReloadData {
     long long timestamp = (long long)[NSDate date].timeIntervalSince1970;
     self.imageUrls = @[
-        [NSString stringWithFormat:@"https://uploadbeta.com/api/pictures/random/?t=%lld&i=0", timestamp],
-        [NSString stringWithFormat:@"https://uploadbeta.com/api/pictures/random/?t=%lld&i=1", timestamp],
-        [NSString stringWithFormat:@"https://uploadbeta.com/api/pictures/random/?t=%lld&i=2", timestamp],
-        [NSString stringWithFormat:@"https://uploadbeta.com/api/pictures/random/?t=%lld&i=3", timestamp],
-        [NSString stringWithFormat:@"https://uploadbeta.com/api/pictures/random/?t=%lld&i=4", timestamp],
-        [NSString stringWithFormat:@"https://uploadbeta.com/api/pictures/random/?t=%lld&i=5", timestamp]
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=0", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=1", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=2", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=3", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=4", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=5", timestamp]
     ];
     [self.carouselView reloadData];
 }
