@@ -22,6 +22,8 @@ To run the example project, clone the repo, and run `pod install` from the Examp
 
 ## Requirements
 
+iOS 8+
+
 ## Installation
 
 CJCarouselView is available through [CocoaPods](https://cocoapods.org). To install
