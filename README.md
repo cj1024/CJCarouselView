@@ -15,6 +15,7 @@
 * 支持定时自动翻页
 * 未集成图片管理、PageIndicator等第三方库，可按需自行集成其他库
 * API设计类似UITableView
+* 基于UICollectionView实现重用机制
 
 ## Example
 
