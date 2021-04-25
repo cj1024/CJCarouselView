@@ -65,6 +65,7 @@
         aView.delegate = self;
         aView.fadeoutAlpha = 0.2;
         aView.enableScrollOnSinglePage = YES;
+        aView.autoScrollInterval = 3.0;
         _carouselView = aView;
     }
     return _carouselView;
@@ -95,6 +96,7 @@
         [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=5", timestamp]
     ];
     [self.carouselView reloadData];
+    [self.carouselView startAutoScroll];
 }
 
 - (NSUInteger)carouselViewNumberOfPages:(CJCarouselView *)pageView {
