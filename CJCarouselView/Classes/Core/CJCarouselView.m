@@ -76,6 +76,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 - (void)commonInit {
     _unsafeModeMinItemCount = kCJCarouselViewMinItemsCountForUnsafeLayout;
     _autoScrollInterval = 1.0;
+    _autoScrollAnimated = YES;
     _reuseableViewsQueue = [NSMutableDictionary dictionary];
     _collectionViewLayout = [[CJCarouselCollectionViewLayout alloc] init];
     _collectionViewLayout.fadeoutAlpha = 1.0;
@@ -101,6 +102,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     [super willMoveToWindow:newWindow];
     if ([newWindow isKindOfClass:[UIWindow class]]) {
         [self setupTimer];
+        [self scrollToPageAtIndex:self.currentPageIndex animated:NO];
     } else {
         if (self.timer) {
             [self.timer invalidate];
@@ -361,9 +363,9 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 
 - (void)autoScrollTimerFired:(id)sender {
     if (self.autoScrollDirectionReversed) {
-        [self scrollToPrePage];
+        [self scrollToPrePage:self.autoScrollAnimated];
     } else {
-        [self scrollToNextPage];
+        [self scrollToNextPage:self.autoScrollAnimated];
     }
 }
 
@@ -722,6 +724,10 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
 }
 
 - (void)scrollToNextPage {
+    [self scrollToNextPage:YES];
+}
+
+- (void)scrollToNextPage:(BOOL)animated {
     if (self.numberOfPages > 1) {
         // 计算要移动到的位置的index（非实际index）
         NSInteger index = self.currentPageIndex + 1;
@@ -729,7 +735,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
             if (index >= self.numberOfPages) {
                 index = 0;
             }
-            [self scrollToOffset:[self contentOffsetForPage:index] animated:YES index:index option:eCJCarouselViewPageOptionNext];
+            [self scrollToOffset:[self contentOffsetForPage:index] animated:animated index:index option:eCJCarouselViewPageOptionNext];
         } else {
             if (index > self.numberOfPages) {
                 index = self.numberOfPages;
@@ -749,12 +755,16 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
             if (index == self.numberOfPages) {
                 index = 0;
             }
-            [self scrollToOffset:offset animated:YES index:index option:eCJCarouselViewPageOptionNext];
+            [self scrollToOffset:offset animated:animated index:index option:eCJCarouselViewPageOptionNext];
         }
     }
 }
 
 - (void)scrollToPrePage {
+    [self scrollToPrePage:YES];
+}
+
+- (void)scrollToPrePage:(BOOL)animated {
     if (self.numberOfPages > 1) {
         // 计算要移动到的位置的index（非实际index）
         NSInteger index = self.currentPageIndex - 1;
@@ -762,7 +772,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
             if (index <= -1) {
                 index = self.numberOfPages -1;
             }
-            [self scrollToOffset:[self contentOffsetForPage:index] animated:YES index:index option:eCJCarouselViewPageOptionNext];
+            [self scrollToOffset:[self contentOffsetForPage:index] animated:animated index:index option:eCJCarouselViewPageOptionNext];
         } else {
             if (index < -1) {
                 index = -1;
@@ -782,7 +792,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
             if (index == -1) {
                 index = self.numberOfPages - 1;
             }
-            [self scrollToOffset:offset animated:YES index:index option:eCJCarouselViewPageOptionPre];
+            [self scrollToOffset:offset animated:animated index:index option:eCJCarouselViewPageOptionPre];
         }
     }
 }

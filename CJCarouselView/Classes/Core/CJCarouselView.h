@@ -50,6 +50,7 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewLayoutDirection){
 
 @property(nonatomic, assign, readwrite) CFTimeInterval autoScrollInterval; // 自动滚动时间间隔，默认并建议大于1s
 @property(nonatomic, assign, readwrite) BOOL autoScrollDirectionReversed; // 自动滚动是否反向
+@property(nonatomic, assign, readwrite) BOOL autoScrollAnimated; // 自动滚动是否带动画，默认YES
 
 @property(nonatomic, assign, readwrite) CGFloat fadeoutAlpha; // [0.0 - 1.0]，渐隐的最终alpha值，默认1.0，表示不渐隐
 
@@ -86,9 +87,19 @@ typedef NS_ENUM(NSInteger, eCJCarouselViewLayoutDirection){
 - (void)scrollToNextPage;
 
 /**
+ *  滚动到下一页
+ */
+- (void)scrollToNextPage:(BOOL)animated;
+
+/**
  *  滚动到上一页
  */
 - (void)scrollToPrePage;
+
+/**
+ *  滚动到上一页
+ */
+- (void)scrollToPrePage:(BOOL)animated;
 
 /**
  *  开始自动滚动

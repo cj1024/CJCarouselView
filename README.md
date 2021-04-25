@@ -5,11 +5,25 @@
 [![License](https://img.shields.io/cocoapods/l/CJCarouselView.svg?style=flat)](https://cocoapods.org/pods/CJCarouselView)
 [![Platform](https://img.shields.io/cocoapods/p/CJCarouselView.svg?style=flat)](https://cocoapods.org/pods/CJCarouselView)
 
+## Brief
+
+* 支持真无限滚动（非传统设置超大ContentSize方式）
+* 支持横向、纵向滚动
+* 支持设置页间距，或者露出前后一页部分
+* 支持简单的页切换渐隐渐显过渡
+* 每一页都可定制
+* 支持定时自动翻页
+* 未集成图片管理、PageIndicator等第三方库，可按需自行集成其他库
+* API设计类似UITableView
+* 基于UICollectionView实现重用机制
+
 ## Example
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
 
 ## Requirements
+
+iOS 8+
 
 ## Installation
 
@@ -39,13 +53,14 @@ pod 'CJCarouselView'
 }
 
 - (void)viewControllerReloadData {
+    long long timestamp = (long long)[NSDate date].timeIntervalSince1970;
     self.imageUrls = @[
-        @"https://uploadbeta.com/api/pictures/random/?i=0",
-        @"https://uploadbeta.com/api/pictures/random/?i=1",
-        @"https://uploadbeta.com/api/pictures/random/?i=2",
-        @"https://uploadbeta.com/api/pictures/random/?i=3",
-        @"https://uploadbeta.com/api/pictures/random/?i=4",
-        @"https://uploadbeta.com/api/pictures/random/?i=5",
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=0", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=1", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=2", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=3", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=4", timestamp],
+        [NSString stringWithFormat:@"https://bing.ioliu.cn/v1/rand/?w=800&h=600&t=%lld&i=5", timestamp]
     ];
     [self.carouselView reloadData];
 }

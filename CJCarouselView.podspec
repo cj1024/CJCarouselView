@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name             = 'CJCarouselView'
-  s.version          = '0.1.4'
-  s.summary          = 'A Carousel View In Objective-C'
+  s.version          = '0.1.5'
+  s.summary          = 'A Carousel View In Objective-C, Loop Infinitely.'
   s.description      = <<-DESC
 UITableView Style API.
 Not Other Lib Dependency.
