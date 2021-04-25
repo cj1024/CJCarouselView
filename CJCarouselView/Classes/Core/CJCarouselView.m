@@ -102,6 +102,7 @@ static NSUInteger const kCJCarouselViewMinItemsCountForUnsafeLayout = 4;
     [super willMoveToWindow:newWindow];
     if ([newWindow isKindOfClass:[UIWindow class]]) {
         [self setupTimer];
+        [self scrollToPageAtIndex:self.currentPageIndex animated:NO];
     } else {
         if (self.timer) {
             [self.timer invalidate];
