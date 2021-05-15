@@ -118,7 +118,7 @@
         [reuseableView.imageView setContentMode:UIViewContentModeScaleAspectFill];
         reuseableView.enableRippleHighlightStyle = YES;
     }
-    [reuseableView.imageView sd_setImageWithURL:[NSURL URLWithString:self.imageUrls[index]]];
+    [reuseableView.imageView sd_setImageWithURL:[NSURL URLWithString:self.imageUrls[index]] placeholderImage:nil options:SDWebImageRetryFailed];
     reuseableView.contentLabel.text = [NSString stringWithFormat:@"%ld", index];
     return reuseableView;
 }
