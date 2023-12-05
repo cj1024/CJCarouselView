@@ -9,6 +9,8 @@
 #import "CJViewController.h"
 #import <CJCarouselView/CJCarouselView.h>
 #import <CJCollectionViewAdapter/CJCollectionViewAdapter.h>
+#import <SDWebImage/SDImageCache.h>
+#import <FTIndicator/FTProgressIndicator.h>
 #import "CJCollectionViewTestSectionData.h"
 #import "CJCarouselViewController.h"
 
@@ -44,6 +46,7 @@
         self.view.backgroundColor = [UIColor whiteColor];
         self.collectionView.backgroundColor = [UIColor lightGrayColor];
     }
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Clean Img Cache" style:(UIBarButtonItemStylePlain) target:self action:@selector(handleCleanImageCache:)];
     [self viewControllerReloadData];
 }
 
@@ -124,6 +127,14 @@
             [self.navigationController pushViewController:vc animated:YES];
         }]
     ]];
+}
+
+- (void)handleCleanImageCache:(id)sender {
+    [FTProgressIndicator showProgressWithMessage:@"cleaning…"];
+    [[SDImageCache sharedImageCache] clearWithCacheType:SDImageCacheTypeAll
+                                             completion:^{
+        [FTProgressIndicator dismiss];
+    }];
 }
 
 @end
